@@ -23,9 +23,9 @@ cat = intake.open_catalog("http://data.nextgems-h2020.eu/catalog.yaml")
 
 ```{code-cell} ipython3
 datasets = {
-    "ERA5": cat.ERA5.to_dask()["2t"],
-    "MERRA2": cat.MERRA2.to_dask()["t2m"],
-    "JRA3Q": cat.JRA3Q.to_dask()["mean2t"],
+    "ERA5": cat.ERA5(chunks={"cell": -1}).to_dask()["2t"],
+    "MERRA2": cat.MERRA2(chunks={"cell": -1}).to_dask()["t2m"],
+    "JRA3Q": cat.JRA3Q(chunks={"cell": -1}).to_dask()["mean2t"],
 }
 
 fig, ax = plt.subplots()
