@@ -14,6 +14,7 @@ kernelspec:
 ```{code-cell} ipython3
 import intake
 import cartopy.crs as ccrs
+import cmocean
 import easygems.healpix as egh
 import matplotlib.pyplot as plt
 
@@ -33,6 +34,25 @@ for label, sst in datasets.items():
     sst.mean("cell").plot(label=label, ax=ax)
 ax.legend()
 ax.set_ylabel(r"$T_\mathrm{2m}$ / K")
+```
+
+```{code-cell} ipython3
+fig, axes = plt.subplots(nrows=3, dpi=150, figsize=(6.4, 10), subplot_kw={"projection": ccrs.EqualEarth(-135.58)})
+for (label, var), ax in zip(datasets.items(), axes):
+    ax.set_global()
+    ax.coastlines()
+    egh.healpix_show(var.sel(time="2020").mean("time"), vmin=265, vmax=300, cmap="cmo.thermal", ax=ax)
+    ax.set_title(label)
+```
+
+```{code-cell} ipython3
+diff = datasets["MERRA2"] - datasets["ERA5"]
+
+fig, ax = plt.subplots(dpi=150, subplot_kw={"projection": ccrs.EqualEarth(-135.58)})
+ax.set_global()
+ax.coastlines()
+egh.healpix_show(diff.sel(time=slice("2000", "2020")).mean("time"), vmin=-2, vmax=2, cmap="cmo.balance", ax=ax)
+ax.set_title("MERRA2 - ERA5")
 ```
 
 ```{code-cell} ipython3
