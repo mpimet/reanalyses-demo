@@ -16,24 +16,37 @@ import intake
 import cartopy.crs as ccrs
 import cmocean
 import easygems.healpix as egh
+import healpix
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 cat = intake.open_catalog("http://data.nextgems-h2020.eu/catalog.yaml")
 ```
 
 ```{code-cell} ipython3
+
+
+ds = cat.ERA5(chunks={"cell": -1}).to_dask()["2t"]
+
+hamburg = healpix.ang2pix(
+    ds.crs.healpix_nside, 9.993333, 53.550556, lonlat=True, nest=ds.crs.healpix_nside
+)
+```
+
+```{code-cell} ipython3
 datasets = {
-    "ERA5": cat.ERA5(chunks={"cell": -1}).to_dask()["2t"],
-    "MERRA2": cat.MERRA2(chunks={"cell": -1}).to_dask()["t2m"],
-    "JRA3Q": cat.JRA3Q(chunks={"cell": -1}).to_dask()["mean2t"],
+    "ERA5": cat.ERA5(chunks={}).to_dask()["2t"],
+    "MERRA2": cat.MERRA2(chunks={}).to_dask()["t2m"],
+    "JRA3Q": cat.JRA3Q(chunks={}).to_dask()["mean2t"],
 }
 
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(18, 6))
 for label, sst in datasets.items():
-    sst.mean("cell").plot(label=label, ax=ax)
+    sst.sel(cell=hamburg).plot(label=label, ax=ax)
 ax.legend()
 ax.set_ylabel(r"$T_\mathrm{2m}$ / K")
+sns.despine(offset=10)
 ```
 
 ```{code-cell} ipython3
