@@ -22,6 +22,20 @@ cat = intake.open_catalog("http://data.nextgems-h2020.eu/catalog.yaml")
 ```
 
 ```{code-cell} ipython3
+datasets = {
+    "ERA5": cat.ERA5.to_dask()["2t"],
+    "MERRA2": cat.MERRA2.to_dask()["t2m"],
+    "JRA3Q": cat.JRA3Q.to_dask()["mean2t"],
+}
+
+fig, ax = plt.subplots()
+for label, sst in datasets.items():
+    sst.mean("cell").plot(label=label, ax=ax)
+ax.legend()
+ax.set_ylabel(r"$T_\mathrm{2m}$ / K")
+```
+
+```{code-cell} ipython3
 for z in (7, 8):
     ds = cat.ERA5(zoom=z).to_dask()
 
