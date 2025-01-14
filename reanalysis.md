@@ -40,7 +40,6 @@ sns.despine(offset=10)
 ```
 
 ```{code-cell} ipython3
-
 ds = cat.ERA5(chunks={"cell": -1}).to_dask()["2t"]
 
 hamburg = healpix.ang2pix(
@@ -65,20 +64,27 @@ sns.despine(offset=10)
 
 ```{code-cell} ipython3
 datasets = {
-    "ERA5": cat.ERA5(chunks={"cell":-1}).to_dask()["2t"],
-    "MERRA2": cat.MERRA2(chunks={'cell':-1}).to_dask()["t2m"],
-    "JRA3Q": cat.JRA3Q(chunks={"cell":-1}).to_dask()["mean2t"],
+    "ERA5": cat.ERA5(chunks={"cell":-1}).to_dask()["tp"],
+    "MERRA2": cat.MERRA2(chunks={'cell':-1}).to_dask()["prectot"]*86.4,
+    "JRA3Q": cat.JRA3Q(chunks={"cell":-1}).to_dask()["mtpr"] *86.4
+    ,
 }
 
 fig, axes = plt.subplots(nrows=3, dpi=150, figsize=(6.4, 10), subplot_kw={"projection": ccrs.EqualEarth(-135.58)})
 for (label, var), ax in zip(datasets.items(), axes):
     ax.set_global()
     ax.coastlines()
-    egh.healpix_show(var.sel(time="2020").mean("time"), vmin=265, vmax=300, cmap="cmo.thermal", ax=ax)
+    egh.healpix_show(var.sel(time="2020").mean("time"), vmax=0.02,  cmap="cmo.rain", ax=ax)
     ax.set_title(label)
 ```
 
 ```{code-cell} ipython3
+datasets = {
+    "ERA5": cat.ERA5(chunks={"cell":-1}).to_dask()["2t"],
+    "MERRA2": cat.MERRA2(chunks={'cell':-1}).to_dask()["t2m"],
+    "JRA3Q": cat.JRA3Q(chunks={"cell":-1}).to_dask()["mean2t"],
+}
+
 diff = datasets["MERRA2"] - datasets["ERA5"]
 
 fig, ax = plt.subplots(dpi=150, subplot_kw={"projection": ccrs.EqualEarth(-135.58)})
