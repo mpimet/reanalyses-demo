@@ -137,9 +137,9 @@ sns.despine(offset=10)
 
 ```{code-cell} ipython3
 datasets = {
-    "ERA5": cat.ERA5(chunks={"cell": -1}).to_dask().r,
-    "MERRA2": cat.MERRA2(chunks={"cell": -1}).to_dask().rh * 100,
-    "JRA3Q": cat.JRA3Q(chunks={"cell": -1}).to_dask().mr,
+    "ERA5": cat.ERA5(chunks={"level": -1}).to_dask().r,
+    "MERRA2": cat.MERRA2(chunks={"level": -1}).to_dask().rh * 100,
+    "JRA3Q": cat.JRA3Q(chunks={"level": -1}).to_dask().mr,
 }
 
 fig, axes = plt.subplots(ncols=3, figsize=(18, 6))
@@ -147,8 +147,10 @@ fig, axes = plt.subplots(ncols=3, figsize=(18, 6))
 for (label, q), ax in zip(datasets.items(), axes):
     q = (
         q.sel(time="2010")
-        .mean("cell")
-        .plot(ax=ax, vmin=10, vmax=90, x="time", cmap="cmo.deep")
+        .groupby("lat")
+        .mean()
+        .mean(["time"])
+        .plot(ax=ax, vmin=10, vmax=90, x="lat", cmap="cmo.ice_r", alpha=0.8)
     )
     ax.invert_yaxis()
     ax.set_title(label)
