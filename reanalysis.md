@@ -24,6 +24,10 @@ import seaborn as sns
 cat = intake.open_catalog("http://data.nextgems-h2020.eu/catalog.yaml")
 ```
 
+# Time Series
+## Global mean
+Here, we plot the global mean temperature from all three reanalyses. 
+
 ```{code-cell} ipython3
 datasets = {
     "ERA5": cat.ERA5(chunks={"cell": -1}).to_dask()["2t"],
@@ -38,6 +42,10 @@ ax.legend()
 ax.set_ylabel(r"$T_\mathrm{2m}$ / K")
 sns.despine(offset=10)
 ```
+
+## Hamburg
+
+It is also possible to select a specific location (for example Hamburg) and plot the temperature timeseries for all reanalyses.
 
 ```{code-cell} ipython3
 datasets = {
@@ -61,6 +69,11 @@ ax.set_ylabel(r"$T_\mathrm{2m}$ / K")
 sns.despine(offset=10)
 ```
 
+# Maps
+
+## Comparison
+To compare the spatial distribution, we can take the mean over time and plot the pattern on a map (here: precipitation).
+
 ```{code-cell} ipython3
 datasets = {
     "ERA5": cat.ERA5(chunks={"cell": -1}).to_dask()["tp"],
@@ -83,6 +96,10 @@ for (label, var), ax in zip(datasets.items(), axes):
     ax.set_title(label)
 ```
 
+## Differences
+
+Since all reanalyses are on the same healpix zoom level it is also easy to plot the mean spatial differences between two of them in a given time range. Here: the mean differences in 2m temperature between MERRA2 and ERA5
+
 ```{code-cell} ipython3
 datasets = {
     "ERA5": cat.ERA5(chunks={"cell": -1}).to_dask()["2t"],
@@ -104,6 +121,10 @@ egh.healpix_show(
 )
 ax.set_title("MERRA2 - ERA5")
 ```
+
+# Derive new quantities
+
+New quantities like the El-Niño 3.4 index can be calculated and plotted on the fly.
 
 ```{code-cell} ipython3
 datasets = {
@@ -134,6 +155,9 @@ ax.set_title("")
 sns.despine(offset=10)
 ```
 
+# 3D variables 
+Some 3D variables like relative humidity are included, such that their dependency on latitude can be visualized easily.
+
 ```{code-cell} ipython3
 datasets = {
     "ERA5": cat.ERA5(chunks={"level": -1}).to_dask().r,
@@ -154,6 +178,10 @@ for (label, q), ax in zip(datasets.items(), axes):
     ax.invert_yaxis()
     ax.set_title(label)
 ```
+
+# Resolution
+
+ERA5 and JRA55 are provided on zoom 7 and zoom 8. 
 
 ```{code-cell} ipython3
 for z in (7, 8):
