@@ -40,14 +40,6 @@ sns.despine(offset=10)
 ```
 
 ```{code-cell} ipython3
-ds = cat.ERA5(chunks={"cell": -1}).to_dask()["2t"]
-
-hamburg = healpix.ang2pix(
-    ds.crs.healpix_nside, 9.993333, 53.550556, lonlat=True, nest=ds.crs.healpix_nside
-)
-```
-
-```{code-cell} ipython3
 datasets = {
     "ERA5": cat.ERA5(chunks={}).to_dask()["2t"],
     "MERRA2": cat.MERRA2(chunks={}).to_dask()["t2m"],
@@ -56,6 +48,13 @@ datasets = {
 
 fig, ax = plt.subplots(figsize=(18, 6))
 for label, sst in datasets.items():
+    hamburg = healpix.ang2pix(
+        sst.crs.healpix_nside,
+        9.993333,
+        53.550556,
+        lonlat=True,
+        nest=sst.crs.healpix_nside,
+    )
     sst.sel(cell=hamburg).plot(label=label, ax=ax)
 ax.legend()
 ax.set_ylabel(r"$T_\mathrm{2m}$ / K")
