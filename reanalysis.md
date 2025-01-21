@@ -19,14 +19,20 @@ import easygems.healpix as egh
 import healpix
 import matplotlib.pyplot as plt
 import seaborn as sns
+```
 
-
+```{code-cell} ipython3
 cat = intake.open_catalog("http://data.nextgems-h2020.eu/catalog.yaml")
 ```
 
 # Time Series
 ## Global mean
-Here, we plot the global mean temperature from all three reanalyses. 
+
+```{code-cell} ipython3
+cat.ERA5(chunks={"cell": -1}).to_dask()["2t"].mean("cell").plot()
+```
+
+Here, we plot the global mean temperature from all three reanalyses.
 
 ```{code-cell} ipython3
 datasets = {
@@ -181,7 +187,7 @@ for (label, q), ax in zip(datasets.items(), axes):
 
 # Resolution
 
-ERA5 and JRA55 are provided on zoom 7 and zoom 8. 
+ERA5 and JRA55 are provided on zoom 7 and zoom 8.
 
 ```{code-cell} ipython3
 for z in (7, 8):
