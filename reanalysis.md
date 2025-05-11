@@ -4,7 +4,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.6
+    jupytext_version: 1.17.0
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
@@ -21,6 +21,17 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 ```
 
+The three reanalysis datasets ERA5, JRA3Q, and MERRA2 are available via the NextGEMS data catalog.
+Each dataset offers a complete [HEALPix hierarchy](https://easy.gems.dkrz.de/Processing/healpix/index.html), enabling faster data access depending on the type of analysis.
+
+As a rule of thumb, the following zoom levels have proven to be useful:
+
+Zoom | Analysis
+--- | ---
+0 | Global mean
+6 | World maps
+max(z) | Local timeseries
+
 ```{code-cell} ipython3
 cat = intake.open_catalog("http://data.nextgems-h2020.eu/catalog.yaml")
 ```
@@ -29,16 +40,16 @@ cat = intake.open_catalog("http://data.nextgems-h2020.eu/catalog.yaml")
 ## Global mean
 
 ```{code-cell} ipython3
-cat.ERA5(chunks={"cell": -1}).to_dask()["2t"].mean("cell").plot()
+cat.ERA5(zoom=0).to_dask()["2t"].mean("cell").plot()
 ```
 
 Here, we plot the global mean temperature from all three reanalyses.
 
 ```{code-cell} ipython3
 datasets = {
-    "ERA5": cat.ERA5(chunks={"cell": -1}).to_dask()["2t"],
-    "MERRA2": cat.MERRA2(chunks={"cell": -1}).to_dask()["t2m"],
-    "JRA3Q": cat.JRA3Q(chunks={"cell": -1}).to_dask()["mean2t"],
+    "ERA5": cat.ERA5(zoom=0).to_dask()["2t"],
+    "MERRA2": cat.MERRA2(zoom=0).to_dask()["t2m"],
+    "JRA3Q": cat.JRA3Q(zoom=0).to_dask()["mean2t"],
 }
 
 fig, ax = plt.subplots(figsize=(18, 6))
@@ -55,9 +66,9 @@ It is also possible to select a specific location (for example Hamburg) and plot
 
 ```{code-cell} ipython3
 datasets = {
-    "ERA5": cat.ERA5(chunks={}).to_dask()["2t"],
-    "MERRA2": cat.MERRA2(chunks={}).to_dask()["t2m"],
-    "JRA3Q": cat.JRA3Q(chunks={}).to_dask()["mean2t"],
+    "ERA5": cat.ERA5(zoom=8).to_dask()["2t"],
+    "MERRA2": cat.MERRA2(zoom=7).to_dask()["t2m"],
+    "JRA3Q": cat.JRA3Q(zoom=8).to_dask()["mean2t"],
 }
 
 fig, ax = plt.subplots(figsize=(18, 6))
@@ -82,9 +93,9 @@ To compare the spatial distribution, we can take the mean over time and plot the
 
 ```{code-cell} ipython3
 datasets = {
-    "ERA5": cat.ERA5(chunks={"cell": -1}).to_dask()["tp"],
-    "MERRA2": cat.MERRA2(chunks={"cell": -1}).to_dask()["prectot"] * 86.4,
-    "JRA3Q": cat.JRA3Q(chunks={"cell": -1}).to_dask()["mtpr"] * 86.4,
+    "ERA5": cat.ERA5(zoom=6).to_dask()["tp"],
+    "MERRA2": cat.MERRA2(zoom=6).to_dask()["prectot"] * 86.4,
+    "JRA3Q": cat.JRA3Q(zoom=6).to_dask()["mtpr"] * 86.4,
 }
 
 fig, axes = plt.subplots(
@@ -104,16 +115,16 @@ for (label, var), ax in zip(datasets.items(), axes):
 
 ## Differences
 
-Since all reanalyses are on the same healpix zoom level it is also easy to plot the mean spatial differences between two of them in a given time range. Here: the mean differences in 2m temperature between MERRA2 and ERA5
+Since all reanalyses are on the same healpix zoom level it is also easy to plot the mean spatial differences between two of them in a given time range. Here: the mean differences in 2m temperature between JRA3Q and ERA5
 
 ```{code-cell} ipython3
 datasets = {
-    "ERA5": cat.ERA5(chunks={"cell": -1}).to_dask()["2t"],
-    "MERRA2": cat.MERRA2(chunks={"cell": -1}).to_dask()["t2m"],
-    "JRA3Q": cat.JRA3Q(chunks={"cell": -1}).to_dask()["mean2t"],
+    "ERA5": cat.ERA5(zoom=6).to_dask()["2t"],
+    "MERRA2": cat.MERRA2(zoom=6).to_dask()["t2m"],
+    "JRA3Q": cat.JRA3Q(zoom=6).to_dask()["mean2t"],
 }
 
-diff = datasets["MERRA2"] - datasets["ERA5"]
+diff = datasets["JRA3Q"] - datasets["ERA5"]
 
 fig, ax = plt.subplots(dpi=150, subplot_kw={"projection": ccrs.EqualEarth(-135.58)})
 ax.set_global()
@@ -125,7 +136,7 @@ egh.healpix_show(
     cmap="cmo.balance",
     ax=ax,
 )
-ax.set_title("MERRA2 - ERA5")
+ax.set_title("JRA3Q - ERA5")
 ```
 
 # Derive new quantities
@@ -134,9 +145,9 @@ New quantities like the El-Niño 3.4 index can be calculated and plotted on the 
 
 ```{code-cell} ipython3
 datasets = {
-    "ERA5": cat.ERA5.to_dask().skt,
-    "MERRA2": cat.MERRA2.to_dask().ts,
-    "JRA3Q": cat.JRA3Q.to_dask().msst,
+    "ERA5": cat.ERA5(zoom=5).to_dask().skt,
+    "MERRA2": cat.MERRA2(zoom=5).to_dask().ts,
+    "JRA3Q": cat.JRA3Q(zoom=5).to_dask().msst,
 }
 
 fig, ax = plt.subplots(figsize=(8, 4))
@@ -166,9 +177,9 @@ Some 3D variables like relative humidity are included, such that their dependenc
 
 ```{code-cell} ipython3
 datasets = {
-    "ERA5": cat.ERA5(chunks={"level": -1}).to_dask().r,
-    "MERRA2": cat.MERRA2(chunks={"level": -1}).to_dask().rh * 100,
-    "JRA3Q": cat.JRA3Q(chunks={"level": -1}).to_dask().mr,
+    "ERA5": cat.ERA5(zoom=4).to_dask().r,
+    "MERRA2": cat.MERRA2(zoom=4).to_dask().rh * 100,
+    "JRA3Q": cat.JRA3Q(zoom=4).to_dask().mr,
 }
 
 fig, axes = plt.subplots(ncols=3, figsize=(18, 6))
@@ -187,7 +198,7 @@ for (label, q), ax in zip(datasets.items(), axes):
 
 # Resolution
 
-ERA5 and JRA55 are provided on zoom 7 and zoom 8.
+ERA5 and JRA3Q also provide an finer zoom level of 8.
 
 ```{code-cell} ipython3
 for z in (7, 8):
