@@ -33,7 +33,11 @@ Zoom | Analysis
 max(z) | Local timeseries
 
 ```{code-cell} ipython3
-cat = intake.open_catalog("http://data.nextgems-h2020.eu/catalog.yaml")
+# WCRP Global Hackathon catalog
+cat = intake.open_catalog("https://digital-earths-global-hackathon.github.io/catalog/catalog.yaml")["online"]
+
+# NextGEMS catalog
+# cat = intake.open_catalog("https://data.nextgems-h2020.eu/online.yaml")
 ```
 
 # Time Series
